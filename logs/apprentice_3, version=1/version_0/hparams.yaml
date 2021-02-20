@@ -1,0 +1,26 @@
+base_model: resnet200d
+base_model_classifier: fc
+classes: 11
+epochs: 20
+first_cycle_steps: 1000
+fold_seed:
+- 42
+- 13
+- 17
+- 11
+- 23
+gamma: 0.8
+img_size: 512
+lr: 0.0001
+min_lr: 1.0e-06
+num_workers: 5
+precision: 16
+scheduler: CosineAnnealingLR
+seed: 42
+t_max: 15
+train_aug: training_2
+train_batch_size: 16
+val_aug: validation
+val_batch_size: 64
+warmup_steps: 100
+weight_decay: 1.0e-07

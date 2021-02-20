@@ -1,0 +1,23 @@
+config = {
+    'seed' : 42,
+    'fold_seed': [42, 13, 17, 11, 23],
+    'base_model':'resnet200d',
+    'base_model_classifier':'fc',
+    'classes' : 11,
+    'img_size' : 512,
+    'precision' : 16,
+    'train_batch_size' : 16,
+    'val_batch_size' : 64,
+    'train_aug': 'training_2',
+    'val_aug': 'validation',
+    'epochs' : 20,
+    'lr' : 1e-4,
+    'weight_decay': 1e-7,
+    'scheduler': 'CosineAnnealingLR',
+    'first_cycle_steps': 1000,
+    'min_lr': 1e-6,
+    'warmup_steps': 100,
+    'gamma': 0.8,
+    't_max': 15,
+    'num_workers' : 5
+}
