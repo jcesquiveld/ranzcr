@@ -28,12 +28,12 @@ if __name__ == '__main__':
 
     # Create trainer
     filename = f"{config['base_model']}-{{epoch:02d}}{{val_score:.3f}}"
-    checkpoint_callback = ModelCheckpoint(monitor='val_loss',
+    checkpoint_callback = ModelCheckpoint(monitor='val_score',
                                           dirpath=MODELS_DIR,
-                                          mode='min',
+                                          mode='max',
                                           filename=filename)
 
-    early_stopping = EarlyStopping(monitor='val_loss', mode='min', patience=3)
+    early_stopping = EarlyStopping(monitor='val_loss', mode='min', patience=5)
     trainer = Trainer(gpus=1,
                       max_epochs=config['epochs'],
                       precision=config['precision'],

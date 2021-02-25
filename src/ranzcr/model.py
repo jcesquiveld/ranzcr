@@ -1,8 +1,8 @@
 from pytorch_lightning import LightningModule
 import torch
 from torch import nn
-from torch.optim import Adam
-from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim import Adam, AdamW
+from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts, CyclicLR, ReduceLROnPlateau
 from .utils import competition_metric, CosineAnnealingWarmupRestarts
 import timm
 
@@ -55,16 +55,34 @@ class RanzcrClassifier(LightningModule):
                          weight_decay=self.hparams.weight_decay)
         if self.hparams.scheduler == 'CosineAnnealingLR':
             scheduler = CosineAnnealingLR(optimizer, T_max = self.hparams.t_max, eta_min=self.hparams.min_lr, last_epoch=-1)
+            return {'optimizer':optimizer, 'scheduler': scheduler}
+        elif self.hparams.scheduler == 'CosineAnnealingWarmRestarts':
+            scheduler = CosineAnnealingWarmRestarts(optimizer,
+                                                      T_0=self.hparams.T_0,
+                                                      eta_min=self.hparams.min_lr,
+                                                      last_epoch=-1),
             return {'optimizer': optimizer, 'scheduler': scheduler}
+        elif self.hparams.scheduler == 'CyclicLR':
+            scheduler = CyclicLR(optimizer,
+                                 base_lr = self.hparams.min_lr,
+                                 max_lr = self.hparams.lr,
+                                 step_size_up=100, step_size_down=1000,
+                                 scale_mode='iteration',
+                                 mode='triangular2',
+                                 cycle_momentum=False)
+            return [optimizer], {'scheduler':scheduler, 'interval':'step'}
         elif self.hparams.scheduler == 'CosineAnnealingWarmupRestarts':
-            scheduler = {'scheduler': CosineAnnealingWarmupRestarts(optimizer,
-                                                      max_lr=self.hparams.lr,
+            scheduler = CosineAnnealingWarmupRestarts(optimizer=optimizer,
                                                       first_cycle_steps=self.hparams.first_cycle_steps,
-                                                      min_lr=self.hparams.min_lr,
                                                       warmup_steps=self.hparams.warmup_steps,
-                                                      gamma=self.hparams.gamma),
-                        'name':'learning_rate',
-                        'interval':'step'}
-            return {'optimizer': optimizer, 'scheduler': scheduler, 'interval':'step'}
-        else:
+                                                      min_lr=self.hparams.min_lr,
+                                                      max_lr=self.hparams.lr,
+                                                      gamma=self.hparams.gamma)
+            return [optimizer], {'scheduler': scheduler, 'interval': 'step'}
+        elif self.hparams.scheduler == 'ReduceLROnPlateau':
+            scheduler = ReduceLROnPlateau(optimizer=optimizer, mode='max',
+                                          factor=self.hparams.factor,
+                                          patience=self.hparams.patience,
+                                          min_lr=self.hparams.min_lr)
+            return [optimizer], {'scheduler':scheduler, 'monitor':'val_score'}
             return {'optimizer': optimizer}
