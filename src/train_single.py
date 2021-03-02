@@ -28,9 +28,10 @@ if __name__ == '__main__':
 
     # Create trainer
     filename = f"{config['base_model']}-{{epoch:02d}}{{val_score:.3f}}"
-    checkpoint_callback = ModelCheckpoint(monitor='val_score',
+
+    checkpoint_callback = ModelCheckpoint(monitor='val_loss',
                                           dirpath=MODELS_DIR,
-                                          mode='max',
+                                          mode='min',
                                           filename=filename)
 
     early_stopping = EarlyStopping(monitor='val_loss', mode='min', patience=5)
@@ -42,7 +43,7 @@ if __name__ == '__main__':
                       )
 
     # Find best learning rate
-    tune = False
+    tune = True
     if tune:
         lr_finder = trainer.tuner.lr_find(classifier, dm)
         print(f'Suggested lr={lr_finder.suggestion()}')
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         fig.show()
 
     # Train
-    train = True
+    train = False
     torch.cuda.empty_cache()
     if train:
         trainer.fit(classifier, datamodule=dm)

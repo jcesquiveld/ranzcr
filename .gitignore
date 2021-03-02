@@ -3,3 +3,5 @@
 /input/train/
 /models/
 /.idea/
+/src/lightning_logs/
+/logs/basecamp_0, version=1/

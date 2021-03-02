@@ -1,7 +1,7 @@
 config = {
     'seed' : 42,
-    'fold_seed': [23, 13, 17, 42, 11],
-    'base_model':'resnet200d',
+    'fold_seed': [23, 13, 19, 42, 11],
+    'base_model':'resnest101e',
     'base_model_classifier':'fc',
     'classes' : 11,
     'img_size' : 512,
@@ -20,7 +20,7 @@ config = {
     'scheduler': 'CosineAnnealingLR',
 
     # CosineAnnealingLR
-    't_max': 15,
+    't_max': 10,
 
     # CosineAnnealingWarmupRestarts
     "first_cycle_steps": 1000,

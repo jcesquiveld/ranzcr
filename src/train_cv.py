@@ -33,9 +33,9 @@ def train_fold(experiment, version, fold):
 
     # Create trainer
     filename = f"{config['base_model']}-{{epoch:02d}}-fold_{fold}-{{val_score:.3f}}"
-    checkpoint_callback = ModelCheckpoint(monitor='val_score',
+    checkpoint_callback = ModelCheckpoint(monitor='val_loss',
                                           dirpath=MODELS_DIR,
-                                          mode='max',
+                                          mode='min',
                                           filename=filename)
 
     early_stopping = EarlyStopping(monitor='val_score', mode='max', patience=5)
@@ -54,5 +54,5 @@ def train_fold(experiment, version, fold):
 
 if __name__ == '__main__':
 
-    for fold in range(NUM_FOLDS):
-        train_fold(experiment='basecamp', version='1', fold=fold)
+    #for fold in range(NUM_FOLDS):
+    train_fold(experiment='coworker_2', version='1', fold=4)
