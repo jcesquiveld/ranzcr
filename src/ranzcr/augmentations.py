@@ -151,6 +151,10 @@ def get_augmentations(name, img_size):
             A.Normalize(),
             ToTensorV2()
         ])
+    elif name == 'none':
+        aug = A.Compose([
+            A.Resize(img_size, img_size)
+        ])
     else:
         raise ValueError(f"{name} is not a valid augmentations name")
 

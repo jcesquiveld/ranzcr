@@ -1,10 +1,14 @@
 from pytorch_lightning import LightningModule
 import torch
 from torch import nn
-from torch.optim import Adam, AdamW
+from torch.optim import Adam
 from torch.optim.lr_scheduler import CosineAnnealingLR, CosineAnnealingWarmRestarts, CyclicLR, ReduceLROnPlateau
 from .utils import competition_metric, CosineAnnealingWarmupRestarts
 import timm
+
+
+def t_sigmoid(self, x, T=1):
+    return 1 / (1 + torch.exp(-x / T))
 
 class RanzcrClassifier(LightningModule):
 
@@ -86,3 +90,35 @@ class RanzcrClassifier(LightningModule):
                                           min_lr=self.hparams.min_lr)
             return [optimizer], {'scheduler':scheduler, 'monitor':'val_score'}
             return {'optimizer': optimizer}
+
+class RanzcrStudentClassifier(RanzcrClassifier):
+    def __init__(self, config, teacher):
+        super().__init__(config)
+        self.teacher = teacher
+        self.loss_teacher = nn.MSELoss()
+
+    def forward(self, x):
+        x = self.classifier(x)
+
+        return x
+
+    def t_sigmoid(self, x, T=1):
+        return 1 / (1 + torch.exp(-x/T))
+
+    def training_step(self, batch, batch_idx):
+        images, labels = batch
+        teacher_images = images[:,0,:,:,:]
+        student_images = images[:,1,:,:,:]
+
+        student_logits = self(student_images)
+        teacher_logits = self.teacher(teacher_images)
+
+        student_probas = self.t_sigmoid(student_logits, T=2)
+        teacher_probas = self.t_sigmoid(teacher_logits, T=2)
+
+
+        loss_bce = self.loss(student_logits, labels)
+        loss_mse = self.loss_teacher(teacher_probas, student_probas)
+        loss = loss_bce + 5 * loss_mse
+        self.log('train_loss', loss, on_epoch=True, prog_bar=True)
+        return loss

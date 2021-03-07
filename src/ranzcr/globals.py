@@ -3,6 +3,8 @@
 INPUT_DIR = '../input'
 TRAIN_IMAGES = '../input/train'
 TEST_IMAGES = '../input/test'
+ANNOTATED_IMAGES = '../input/annotated'
+MIXED_IMAGES = '../input/mixed'
 MODELS_DIR = '../models'
 LOGS_DIR = '../logs'
 

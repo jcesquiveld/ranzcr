@@ -33,6 +33,33 @@ class RanzcrDataset(Dataset):
         return image, torch.tensor(self.labels[idx], dtype=torch.float32)
 
 
+class TeacherStudentDataset(Dataset):
+    '''
+    Dataset that returns pairs of images, one for the teacher and one for the student,
+    and the corresponding labels
+    '''
+    def __init__(self, teacher_images, student_images, labels, transform=None):
+        self.teacher_images = teacher_images
+        self.student_images = student_images
+        self.labels = labels
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.teacher_images)
+
+    def __getitem__(self, idx):
+        pil_teacher_image = Image.open(self.teacher_images[idx]).convert('RGB')
+        pil_student_image = Image.open(self.student_images[idx]).convert('RGB')
+        teacher_image = np.array(pil_teacher_image)
+        student_image = np.array(pil_student_image)
+        if self.transform:
+            teacher_augmented = self.transform(image=teacher_image)
+            student_augmented = self.transform(image=student_image)
+            teacher_image = teacher_augmented['image']
+            student_image = student_augmented['image']
+
+        return torch.stack([teacher_image, student_image], dim=0), torch.tensor(self.labels[idx], dtype=torch.float32)
+
 class RanzcrDataModule(LightningDataModule):
 
     def __init__(self, path, train_df, val_df, config):

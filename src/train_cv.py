@@ -12,6 +12,8 @@ from ranzcr.config import config
 from ranzcr.data import RanzcrDataModule
 from ranzcr.model import RanzcrClassifier
 
+CHECKPOINT_MODEL = '../models/teacher-student/teacher-resnet200d-epoch=12val_score=0.941.ckpt'
+
 def train_fold(experiment, version, fold):
 
     # Seed everything
@@ -24,7 +26,7 @@ def train_fold(experiment, version, fold):
 
     # Data module
     dm = RanzcrDataModule(TRAIN_IMAGES, train_df, val_df, config)
-    classifier = RanzcrClassifier(config)
+    classifier = RanzcrClassifier.load_from_checkpoint(CHECKPOINT_MODEL)
 
     # Logger
     logger = TensorBoardLogger(save_dir=LOGS_DIR,
@@ -34,6 +36,7 @@ def train_fold(experiment, version, fold):
     # Create trainer
     filename = f"{config['base_model']}-{{epoch:02d}}-fold_{fold}-{{val_score:.3f}}"
     checkpoint_callback = ModelCheckpoint(monitor='val_loss',
+                                          save_top_k=20,
                                           dirpath=MODELS_DIR,
                                           mode='min',
                                           filename=filename)
@@ -44,7 +47,7 @@ def train_fold(experiment, version, fold):
                       precision=config['precision'],
                       num_sanity_val_steps=0,
                       logger=logger,
-                      callbacks=[checkpoint_callback, early_stopping]
+                      callbacks=[checkpoint_callback]
                       )
     # Free cache
     torch.cuda.empty_cache()
@@ -54,5 +57,6 @@ def train_fold(experiment, version, fold):
 
 if __name__ == '__main__':
 
-    #for fold in range(NUM_FOLDS):
-    train_fold(experiment='coworker_2', version='1', fold=4)
+    for fold in range(NUM_FOLDS-1, NUM_FOLDS):
+        print(f'------------------------- Training fold {fold} ----------------------------')
+        train_fold(experiment='mixed', version='1', fold=fold)

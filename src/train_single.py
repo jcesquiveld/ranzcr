@@ -14,13 +14,15 @@ from ranzcr.model import RanzcrClassifier
 
 if __name__ == '__main__':
 
+    FOLD = 0
+
     # Seed everything
     seed(config['seed'])
 
     # Read data
-    train_k_df = pd.read_csv(os.path.join(INPUT_DIR, 'train_k.csv'))
-    train_df = train_k_df[train_k_df.fold != 0]
-    val_df = train_k_df[train_k_df.fold == 0]
+    train_k_df = pd.read_csv(os.path.join(INPUT_DIR, 'annotated_train_k.csv'))
+    train_df = train_k_df[train_k_df.fold != FOLD]
+    val_df = train_k_df[train_k_df.fold == FOLD]
 
     # Data module
     dm = RanzcrDataModule(TRAIN_IMAGES, train_df, val_df, config)
@@ -43,7 +45,7 @@ if __name__ == '__main__':
                       )
 
     # Find best learning rate
-    tune = True
+    tune = False
     if tune:
         lr_finder = trainer.tuner.lr_find(classifier, dm)
         print(f'Suggested lr={lr_finder.suggestion()}')
@@ -51,7 +53,7 @@ if __name__ == '__main__':
         fig.show()
 
     # Train
-    train = False
+    train = True
     torch.cuda.empty_cache()
     if train:
         trainer.fit(classifier, datamodule=dm)

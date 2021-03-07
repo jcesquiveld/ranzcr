@@ -7,5 +7,5 @@ def rename_underscores(dir):
 
 if __name__ == '__main__':
 
-    dir = '../models/coworker_2'
+    dir = '../models/basecamp-2'
     rename_underscores(dir)
